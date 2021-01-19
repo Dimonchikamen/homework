@@ -1,46 +1,65 @@
-import openpyxl
+# ____________ВАРИАНТ 2____________
 
-dictionary = {}
-collection = []
-fileInput = "students.txt"
-fileOutput_without_scholarship = "without_scholarship.txt"
-fileOutput_up_scholarship = "up_scholarship.txt"
-fileOutput_Csv = "students.csv"
+# ----------------Задание с SQLite----------------
+# Удалите имя исполнителя (то, которое вы указали при создании таблицы),
+# обновите таблицу альбомов (измените издателя у любых 2х альбомов),
+# подтвердите изменения. Выберете все записи, подходящие под переданное имя исполнителя,
+# воспользуйтесь fetchall() для получения результатов
+import sqlite3 as sql
 
-with open(fileInput, "r", encoding="utf8") as file:
-    for line in file:
-        a = line.split("-")
-        a[1] = a[1][1]
-        dictionary[a[0]] = a[1]
+connection = sql.connect("Audios_Homework.db")
+cursor = connection.cursor()
+cursor.execute(""" CREATE TABLE IF NOT EXISTS Audios_Homework( 
+    ID INT PRIMARY KEY,
+    title TEXT,
+    artist TEXT,
+    release_date TEXT,
+    publisher TEXT,
+    media_type TEXT)""")
+coll = []
+coll.append(('00001', 'Chto oni znayut?', 'Egor Kreed', '2017', 'Bclack Star inc.', 'Pop'))
+coll.append(('00002', 'Holostyak', 'Egor Kreed', '2015', 'Black Star inc.', 'Pop'))
+coll.append(('00003', 'One More Light', 'Linkin Park', '2017', 'Warner Brothers Records', 'Alternative'))
+coll.append(('00004', 'Victorious', 'Skillet', '2019', '	Atlantic Records', 'Alternative'))
+coll.append(('00005', 'Evolve', 'Imagine Dragons', '2017', 'KIDinaKORNER', 'Alternative'))
+
+for elem in coll:
+    cursor.execute("INSERT INTO Audios_Homework VALUES(?, ?, ?, ?, ?, ?);", elem)
+
+cursor.execute(""""UPDATE Audios_Homework
+    SET artist = NULL
+    WHERE title = 'Skillet';""")
+cursor.execute(""""UPDATE Audios_Homework
+    SET publisher = 'Unknown'
+    WHERE artist = 'Egor Kreed';""")
+connection.commit()
+
+print("Введите Имя артиста")
+name = input()
+cursor.execute(f"SELECT * FROM Audios_Homework WHERE artist = '{name}' ;")
+all_Results = cursor.fetchall()
+for elem in all_Results:
+    print(elem)
+# ________________________________________________
+# ---------------Задание со строкой---------------
+# Дана строка, состоящая из слов, разделенных пробелами.
+# Определите, сколько в ней слов. Используйте для решения задачи метод.
+#
+# Определить количество слов в строке (слова разделены пробелами), воспользуйтесь методом count.
+
+string = "Введённая строка с большим количетсовом пробелом пробел1 пробел2 пробел3 пробел4 пробел5 раз два три ёлочка гори"
+
+# нахождение количества слов произвольным образом
+collection = string.split()
+print(f"В строке {len(collection)} слов")
+
+# Нахождение количества слов с помощью метода count()
+print(f"В строке {string.count(' ') + 1} слов")
+# ------------------------------------------------
 
 
-def solve_txt():
-    with open(fileOutput_without_scholarship, "w") as file:
-        for key in dictionary:
-            if int(dictionary[key]) <= 3:
-                file.write(key + "\n")
-
-    with open(fileOutput_up_scholarship, "w") as file:
-        for key in dictionary:
-            if int(dictionary[key]) == 5:
-                file.write(key + "\n")
 
 
-def solve_csv():
-    for key in dictionary:
-        a = key.split(" ")
-        localColl = [a[0], a[1], dictionary[key]]
-        collection.append(localColl)
-
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    sheet.append(["Фамилия", "Имя", "Оценка"])
-    for elem in collection:
-        sheet.append([elem[0], elem[1], elem[2]])
-    workbook.save(fileOutput_Csv)
-    workbook.close()
 
 
-solve_txt()
-solve_csv()
 
